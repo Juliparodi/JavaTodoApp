@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.juliparodi.rest.webservices</groupId>
 	<artifactId>restful-web-services</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>restful-web-services</name>
 	<description>Todo App </description>
 	<properties>
