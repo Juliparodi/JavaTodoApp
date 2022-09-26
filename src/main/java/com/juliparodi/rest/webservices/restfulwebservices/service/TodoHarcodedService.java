@@ -1,54 +1,66 @@
 package com.juliparodi.rest.webservices.restfulwebservices.service;
 
+import com.juliparodi.rest.webservices.restfulwebservices.exception.ItemNotFoundException;
 import com.juliparodi.rest.webservices.restfulwebservices.model.Todo;
 import com.juliparodi.rest.webservices.restfulwebservices.model.TodoDTO;
+import com.juliparodi.rest.webservices.restfulwebservices.repository.TodoJpaRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TodoHarcodedService {
 
+    @Autowired
+    TodoJpaRepository todoJpaRepository;
     private static List<Todo> todos = new ArrayList<>();
     static Long idCounter = 0L;
 
+    /*
     static{
         todos.add(new Todo(idCounter++, "juliparodi", "Learn full stack development", LocalDate.now(), false));
         todos.add(new Todo(idCounter++, "juliparodi", "Invest in bitcoin", LocalDate.now(), false));
         todos.add(new Todo(idCounter++, "juliparodi", "Cook for tonight", LocalDate.now(), false));
     }
+     */
+
 
     public List<Todo> findAll() {
-        return todos;
+        return todoJpaRepository.findAll();
     }
 
     public Optional<Todo> addTodo(TodoDTO todoDTO){
-        if(!findByDescription(todoDTO.getDescription()).isEmpty()){
+        if(findByDescription(todoDTO.getDescription()).isPresent()){
             return Optional.empty();
         }
         LocalDate targetDate = todoDTO.getTargetDate()==null? LocalDate.now() : todoDTO.getTargetDate();
-        todos.add(new Todo(idCounter++, todoDTO.getUsername(), todoDTO.getDescription(), targetDate, false));
+        Todo todo = Todo.builder()
+        .username(todoDTO.getUsername())
+        .description(todoDTO.getDescription())
+            .targetDate(targetDate)
+                .isDone(false)
+                    .build();
+
+        todoJpaRepository.save(todo);
         return findByDescription(todoDTO.getDescription());
     }
 
-    public Optional<Todo> deleteById(long id){
+    public void deleteById(long id){
         Optional<Todo> todo = findById(id).isPresent() ? findById(id) :  Optional.empty();
         if(todo.isEmpty()){
-            return todo;
+            throw new ItemNotFoundException();
         } else {
-            if (todos.remove(todo.get())){
-                return todo;
-            } else {
-                return Optional.empty();
-            }
+            todoJpaRepository.deleteById(todo.get().getId());
         }
     }
 
     public Optional<Todo> findByDescription(String description){
         try {
-            return todos.stream()
+            return todoJpaRepository.findAllByDescription(description)
+                .stream()
                 .filter(todo -> todo.getDescription().equalsIgnoreCase(description))
                 .findFirst();
         } catch (Exception e) {
@@ -69,10 +81,11 @@ public class TodoHarcodedService {
     public Optional<Todo> updateById(long id, Todo todo) {
         Optional<Todo> todoFound = findById(id);
         if(todoFound.isEmpty()){
-            return Optional.empty();
+            throw new ItemNotFoundException();
         }
         todoFound.get().setDescription(todo.getDescription());
         todoFound.get().setTargetDate(todo.getTargetDate());
+        todoJpaRepository.save(todoFound.get());
         return todoFound;
     }
 }

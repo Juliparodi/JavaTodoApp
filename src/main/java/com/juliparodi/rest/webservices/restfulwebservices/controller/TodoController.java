@@ -7,8 +7,6 @@ import com.juliparodi.rest.webservices.restfulwebservices.service.TodoHarcodedSe
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.FileNotFoundException;
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -22,11 +20,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Slf4j
 @RequestMapping("/juli/todoapp")
@@ -45,6 +41,7 @@ public class TodoController {
     })
     @ApiOperation(value = "Devuelve la informacion necesaria para hacer la compra")
     public List<Todo> getAllTodos(@PathVariable String name) {
+        log.info("pasa x aca");
         return todoHarcodedService.findAll();
     }
 
@@ -98,12 +95,9 @@ public class TodoController {
         @ApiResponse(code = 500, message = "Internal Server Error")
     })
     @ApiOperation(value = "Deletes an item in the todoApp list")
-    public ResponseEntity<String> deleteById(@PathVariable String name, @PathVariable Long id) {
-        if(todoHarcodedService.deleteById(id).isEmpty()){
-            throw new ItemNotFoundException();
-        } else{
-            return ResponseEntity.ok("deleted succesfully");
-        }
+    public BodyBuilder deleteById(@PathVariable String name, @PathVariable Long id) {
+       todoHarcodedService.deleteById(id);
+       return ResponseEntity.ok();
     }
 
 }
